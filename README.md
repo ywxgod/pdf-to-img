@@ -1,6 +1,8 @@
 # pdf-to-img_fork
 
-此项目fork自https://github.com/k-yle/pdf-to-img，原项目将每个pdf页面直接暴露为Buffer类型，使用的时候通过fs.write直接存图片即可。
+此项目fork自https://github.com/k-yle/pdf-to-img，
+
+原项目将每个pdf页面直接暴露为Buffer类型，使用的时候通过fs.write直接存图片即可。
 
 最近有需求，由于需要根据PDF内容提取部分页面并转为图片，所以需要一个在PDF中搜索的功能，由于原项目并未暴露PDFDocumentProxy，所以做了以下修改：
 
