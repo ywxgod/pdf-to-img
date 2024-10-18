@@ -2,7 +2,7 @@ import "./polyfill.js"; // do this before pdfjs
 import { createRequire } from "node:module";
 import path from "node:path";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
-import type { DocumentInitParameters } from "pdfjs-dist/types/src/display/api.js";
+import type { DocumentInitParameters, PDFDocumentProxy, PDFPageProxy, TextItem } from "pdfjs-dist/types/src/display/api.js";
 import { NodeCanvasFactory } from "./canvasFactory.js";
 import { parseInput } from "./parseInput.js";
 
@@ -41,6 +41,8 @@ export type Options = {
   scale?: number;
   /** document init parameters which are passed to pdfjs.getDocument */
   docInitParams?: Partial<DocumentInitParameters>;
+  /** how many chars to show for the search result around, default value is 20  */
+  searchViewLength?: number;
 };
 
 /**
@@ -71,9 +73,12 @@ export async function pdf(
   input: string | Uint8Array | Buffer | NodeJS.ReadableStream,
   options: Options = {}
 ): Promise<{
+  doc: PDFDocumentProxy
   length: number;
   metadata: PdfMetadata;
   getPage(pageNumber: number): Promise<Buffer>;
+  search(searchText:string): Promise<Array<{pageNum:number, lines: Array<string>}>>,
+  searchInPage(searchText:string, page: PDFPageProxy): Promise<Array<string>>
   [Symbol.asyncIterator](): AsyncIterator<Buffer, void, void>;
 }> {
   const data = await parseInput(input);
@@ -91,6 +96,7 @@ export async function pdf(
   }).promise;
 
   const metadata = await pdfDocument.getMetadata();
+  const searchViewLength = options.searchViewLength || 20;
 
   async function getPage(pageNumber: number) {
     const page = await pdfDocument.getPage(pageNumber);
@@ -110,7 +116,34 @@ export async function pdf(
     return canvas.toBuffer();
   }
 
+  async function searchInPage(searchText:string, page: PDFPageProxy) {
+    const content = await page.getTextContent({includeMarkedContent: false});
+    const text = content.items.map(item => (item as TextItem).str).join('');
+    const re = new RegExp(`(.{0,${searchViewLength}})` + searchText + `(.{0,${searchViewLength}})`, "gi");
+    let m;
+    const lines = [];
+    while(m = re.exec(text)) {
+        const line = (m[1] ? "..." : "") + m[0] + (m[2] ? "..." : "");
+        lines.push(line);
+    }
+    return lines;
+  }
+
+  async function search(searchText:string) {
+    const numOfPages = pdfDocument.numPages;
+    const result = [];
+    for(let i=0;i<numOfPages;i++) {
+      const page = await pdfDocument.getPage(i);
+      const lines = await searchInPage(searchText, page);
+      result.push({ pageNum: i, lines });
+    }
+    return result;
+  }
+
   return {
+    doc: pdfDocument,
+    search,
+    searchInPage,
     length: pdfDocument.numPages,
     metadata: sanitize(metadata.info),
     getPage,

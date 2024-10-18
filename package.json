@@ -1,8 +1,8 @@
 {
-  "name": "pdf-to-img",
-  "version": "4.1.1",
-  "author": "Kyle Hensel",
-  "description": "📃📸 Converts PDFs to images in nodejs",
+  "name": "search_in_pdf",
+  "version": "0.1.0",
+  "author": "ywx1818@163.com",
+  "description": "Search in PDF, and according to the search results convert it to image",
   "exports": "./dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -18,7 +18,7 @@
     "vitest",
     "jest"
   ],
-  "repository": "https://github.com/k-yle/pdf-to-img",
+  "repository": "https://github.com/ywxgod/pdf-to-img",
   "scripts": {
     "build": "tsc && rm -rf dist && mv temp/src dist && rm -rf temp",
     "lint": "eslint --ignore-path .gitignore .",
