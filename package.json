@@ -1,8 +1,8 @@
 {
-  "name": "search_in_pdf",
-  "version": "0.1.0",
+  "name": "search-in-pdf",
+  "version": "0.1.1",
   "author": "ywx1818@163.com",
-  "description": "Search in PDF, and according to the search results convert it to image",
+  "description": "在PDF中搜索某个字符，根据需要将PDF指定页面转为图片",
   "exports": "./dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
